@@ -62,10 +62,10 @@ def check_consistency(matrix):
 
 # 模型训练相关函数
 def objective_function(params, x_train, y_train):
-    model = MLPRegressor(hidden_layer_sizes=(100,), activation='relu', solver='adam', alpha=params['alpha'], learning_rate_init=params['learning_rate_init'], early_stopping=True, random_state=42)
+    model = MLPRegressor(hidden_layer_sizes=(100,), activation='relu', solver='adam', alpha=params['alpha'], learning_rate_init=params['learning_rate_init'], early_stopping=True, max_iter=1, warm_start=True, random_state=42)
     model.fit(x_train, y_train)
     mse = mean_squared_error(y_train, model.predict(x_train))
-    return {'loss': mse, 'status': STATUS_OK}
+    return {'loss': mse, 'status': STATUS_OK, 'model': model}
 
 def train_model(x_train, y_train, x_test, y_test):
     space = {
@@ -76,8 +76,9 @@ def train_model(x_train, y_train, x_test, y_test):
     mse_history = []
     for i in range(500):
         best_params = fmin(fn=lambda params: objective_function(params, x_train, y_train), space=space, algo=tpe.suggest, max_evals=i+1)
-        optimized_params = space_eval(space, best_params)
-        mse_history.append(optimized_params['loss'])
+        mse_history.append(best_params['loss'])
+
+    optimized_params = space_eval(space, best_params)
 
     model = MLPRegressor(hidden_layer_sizes=(100,), activation='relu', solver='adam', alpha=optimized_params['alpha'], learning_rate_init=optimized_params['learning_rate_init'], early_stopping=True, random_state=42)
     model.fit(x_train, y_train)
@@ -100,7 +101,6 @@ def train_model(x_train, y_train, x_test, y_test):
     fig3.update_layout(title_text="模型优化变化")
 
     return fig1, fig2, fig3, model, mse
-
 def main():
     st.title("数据分析与模型训练")
 
