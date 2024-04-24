@@ -1,3 +1,9 @@
 streamlit
 hyperopt
-# any other libraries your app needs
+numpy
+pandas
+matplotlib
+seaborn
+streamlit
+scikit-learn
+shap
