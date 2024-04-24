@@ -28,43 +28,45 @@ def preprocess_data(data):
 def validate_user_input(user_input):
     try:
         numbers = []
+
         for num_str in user_input.split(','):
             if '/' in num_str:
                 numerator, denominator = map(int, num_str.split('/'))
                 numbers.append(numerator / denominator)
             else:
                 numbers.append(int(num_str))
+
         if len(numbers) != 9:
             raise ValueError("每行应输入9个数值（整数或分数），以逗号分隔")
+
         return numbers
+
     except ValueError as e:
         st.error(f"输入格式错误: {e}")
         raise
 
+
 def get_user_matrix():
     user_matrix = []
-    for i in range(9):
-        row = st.text_input(f"请输入第{i+1}行的9个数字，用逗号分隔:")
+
+    for i in range(3):
+        row = st.text_input(f"请输入第{i+1}行的3个数字，用逗号分隔:")
         if row:
             user_matrix.append(validate_user_input(row))
 
-    if len(user_matrix) == 9:
+    if len(user_matrix) == 3:
         user_matrix = np.array(user_matrix)
-        consistent, weights = check_consistency(user_matrix)
-        if consistent:
-            return user_matrix, weights
-        else:
-            st.warning("一致性比率大于0.1，请重新输入比较矩阵。")
-            return None, None
+        return user_matrix
     else:
-        return None, None  # 如果用户还没有输入完所有的数据，就返回None, None
+        return None  # 如果用户还没有输入完所有的数据，就返回None
 
-def check_consistency(matrix):
-    weights = np.mean(matrix / matrix.sum(axis=0), axis=1)
-    cr = np.max(np.abs(np.dot(matrix, weights) - np.sum(weights))) / (len(matrix) - 1)
-    if cr > 0.1:
-        return False, None
-    return True, weights
+
+def calculate_weights(criteria_judgment_matrix):
+    eig_vals, eig_vecs = np.linalg.eig(criteria_judgment_matrix)
+    max_eig_val_index = np.argmax(eig_vals.real)
+    weight_vector = eig_vecs[:, max_eig_val_index].real
+    weight_vector /= np.sum(weight_vector)
+    return weight_vector
 
 # 模型训练相关函数
 def objective_function(params, x_train, y_train):
