@@ -10,6 +10,16 @@ from hyperopt import hp, fmin, tpe, space_eval
 import plotly.express as px
 import plotly.graph_objs as go
 from sklearn.metrics import r2_score, mean_absolute_error
+import matplotlib.pyplot as plt
+
+def create_metrics_bar(metrics):
+    r2, mae = metrics
+    fig, ax = plt.subplots()
+    ax.barh(['R-squared', 'Mean Absolute Error'], [r2, mae], color=['blue', 'orange'])
+    ax.set_title('Model Evaluation Metrics')
+    ax.set_xlabel('Value')
+    return fig, ax
+
 
 # 数据预处理函数
 def preprocess_data(data):
