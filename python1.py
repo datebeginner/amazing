@@ -75,10 +75,10 @@ def train_model(x_train, y_train, x_test, y_test):
 
     mse_history = []
     for i in range(500):
-        best_params = fmin(fn=lambda params: objective_function(params, x_train, y_train), space=space, algo=tpe.suggest, max_evals=i+1)
-        mse_history.append(best_params['loss'])
+        result = fmin(fn=lambda params: objective_function(params, x_train, y_train), space=space, algo=tpe.suggest, max_evals=i+1)
+        mse_history.append(result['loss'])
 
-    optimized_params = space_eval(space, best_params)
+    optimized_params = space_eval(space, result)
 
     model = MLPRegressor(hidden_layer_sizes=(100,), activation='relu', solver='adam', alpha=optimized_params['alpha'], learning_rate_init=optimized_params['learning_rate_init'], early_stopping=True, random_state=42)
     model.fit(x_train, y_train)
@@ -98,7 +98,7 @@ def train_model(x_train, y_train, x_test, y_test):
 
     fig3 = go.Figure()
     fig3.add_trace(go.Scatter(y=mse_history, mode='lines'))
-    fig3.update_layout(title_text="模型优化变化")
+    fig3.update_layout(title_text="模型优化过程")
 
     return fig1, fig2, fig3, model, mse
 def main():
