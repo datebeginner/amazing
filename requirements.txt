@@ -1,0 +1,3 @@
+streamlit
+hyperopt
+# any other libraries your app needs
