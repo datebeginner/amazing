@@ -23,7 +23,7 @@ def create_metrics_bar(metrics):
 
 # 数据预处理函数
 def preprocess_data(data):
-    features = data[['B1C1', 'B1C2', 'B2C1', 'B2C2', 'B2C3', 'B3C1', 'B3C2']].copy()
+    features = data[['B1C1', 'B1C2', 'B1C3', 'B2C1', 'B2C2', 'B2C3', 'B3C1', 'B3C2', 'B3C3']].copy()
     labels = data['物流行业经济适应度'].copy()
 
     features.dropna(inplace=True)
@@ -39,8 +39,8 @@ def preprocess_data(data):
 def validate_user_input(user_input):
     try:
         numbers = list(map(float, user_input.split(',')))
-        if len(numbers) != 7:
-            raise ValueError("每行应输入7个数字，用逗号分隔")
+        if len(numbers) != 9:
+            raise ValueError("每行应输入9个数字，用逗号分隔")
         return numbers
     except ValueError as e:
         st.error(f"输入格式错误: {e}")
@@ -48,12 +48,12 @@ def validate_user_input(user_input):
 
 def get_user_matrix():
     user_matrix = []
-    for i in range(7):
-        row = st.text_input(f"请输入第{i+1}行的7个数字，用逗号分隔:")
-        if row:  # 只有当用户输入了数据后才添加到列表中
+    for i in range(9):
+        row = st.text_input(f"请输入第{i+1}行的9个数字，用逗号分隔:")
+        if row:  
             user_matrix.append(validate_user_input(row))
 
-    if len(user_matrix) == 7:  # 只有当用户输入了所有7行数据后才进行处理
+    if len(user_matrix) == 9:  
         user_matrix = np.array(user_matrix)
         consistent, weights = check_consistency(user_matrix)
         if consistent:
@@ -61,6 +61,8 @@ def get_user_matrix():
         else:
             st.warning("一致性比率大于0.1，请重新输入比较矩阵。")
             return None, None
+    else:
+        return None, None
     else:
         return None, None  # 如果用户还没有输入完所有的数据，就返回None, None
 
@@ -135,7 +137,6 @@ def main():
             x_train, x_test, y_train, y_test = preprocess_data(data)
             x_train = x_train * weights_df.T.values
             x_test = x_test * weights_df.T.values
-
             fig1, fig2, model, mse, r2, mae = train_model(x_train, y_train, x_test, y_test)
 
             st.subheader("模型训练结果")
