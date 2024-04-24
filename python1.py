@@ -9,6 +9,7 @@ from sklearn.neural_network import MLPRegressor
 from hyperopt import hp, fmin, tpe, space_eval
 import plotly.express as px
 import plotly.graph_objs as go
+from hyperopt import fmin, tpe, hp, STATUS_OK, Trials
 
 # 数据预处理函数
 def preprocess_data(data):
