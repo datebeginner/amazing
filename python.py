@@ -82,7 +82,7 @@ def train_model(x_train, y_train, x_test, y_test):
 
     y_pred = model.predict(x_test)
     mse = mean_squared_error(y_test, y_pred)
-        r2 = r2_score(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
     mae = mean_absolute_error(y_test, y_pred)
 
     fig1 = go.Figure()
