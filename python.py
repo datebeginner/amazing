@@ -96,6 +96,20 @@ def train_model(x_train, y_train, x_test, y_test):
     fig2.update_layout(title_text="训练和测试数据分布", barmode='overlay')
 
     return fig1, fig2, model, mse, r2, mae
+     r2 = r2_score(y_test, y_pred)
+    mae = mean_absolute_error(y_test, y_pred)
+
+    # 创建一个新的图像
+    fig, ax = plt.subplots()
+
+    # 添加条形图
+    ax.barh(['R-squared', 'Mean Absolute Error'], [r2, mae], color=['blue', 'orange'])
+
+    # 添加标题和标签
+    ax.set_title('Model Evaluation Metrics')
+    ax.set_xlabel('Value')
+
+    return fig, ax
 
 def main():
     st.title("数据分析与模型训练")
@@ -117,6 +131,9 @@ def main():
             st.subheader("模型训练结果")
             st.plotly_chart(fig1)
             st.plotly_chart(fig2)
+
+            metrics_fig, metrics_ax = create_metrics_bar([r2, mae])
+            st.pyplot(metrics_fig)
 
             st.write(f"均方误差（MSE）: {mse}")
             st.write(f"R-squared: {r2}")
