@@ -9,6 +9,7 @@ from sklearn.neural_network import MLPRegressor
 from hyperopt import hp, fmin, tpe, space_eval
 import plotly.express as px
 import plotly.graph_objs as go
+from sklearn.metrics import r2_score, mean_absolute_error
 
 # 数据预处理函数
 def preprocess_data(data):
@@ -81,18 +82,20 @@ def train_model(x_train, y_train, x_test, y_test):
 
     y_pred = model.predict(x_test)
     mse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+    mae = mean_absolute_error(y_test, y_pred)
 
     fig1 = go.Figure()
     fig1.add_trace(go.Scatter(y=y_test, mode='lines', name='Actual'))
     fig1.add_trace(go.Scatter(y=y_pred, mode='lines', name='Predicted'))
-    fig1.update_layout(title_text=f"模型评估<br>MSE: {mse:.4f}")
+    fig1.update_layout(title_text=f"模型评估<br>MSE: {mse:.4f}, R-squared: {r2:.4f}, Mean Absolute Error: {mae:.4f}")
 
     fig2 = go.Figure()
     fig2.add_trace(go.Histogram(x=x_train, name='Train', nbinsx=20, opacity=0.5))
     fig2.add_trace(go.Histogram(x=x_test, name='Test', nbinsx=20, opacity=0.5))
     fig2.update_layout(title_text="训练和测试数据分布", barmode='overlay')
 
-    return fig1, fig2, model, mse
+    return fig1, fig2, model, mse, r2, mae
 
 def main():
     st.title("数据分析与模型训练")
@@ -116,6 +119,8 @@ def main():
             st.plotly_chart(fig2)
 
             st.write(f"均方误差（MSE）: {mse}")
+            st.write(f"R-squared: {r2}")
+st.write(f"Mean Absolute Error: {mae}")
 
             st.header("使用模型进行预测")
             user_input = st.text_input("输入预测数据（以逗号分隔的数值）")
