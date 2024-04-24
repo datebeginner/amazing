@@ -27,9 +27,12 @@ def preprocess_data(data):
 # 层次分析法（AHP）相关函数
 def validate_user_input(user_input):
     try:
-        numbers = list(map(float, user_input.split(',')))
+        numbers = []
+        for num_str in user_input.split(','):
+            numerator, denominator = map(int, num_str.split('/'))
+            numbers.append(numerator / denominator)
         if len(numbers) != 9:
-            raise ValueError("每行应输入9个数字，用逗号分隔")
+            raise ValueError("每行应输入9个分数，以逗号分隔")
         return numbers
     except ValueError as e:
         st.error(f"输入格式错误: {e}")
