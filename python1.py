@@ -73,12 +73,12 @@ def train_model(x_train, y_train, x_test, y_test):
         'learning_rate_init': hp.loguniform('learning_rate_init', np.log(0.0001), np.log(1)),
     }
 
-    mse_history = []
-    for i in range(500):
-        result = fmin(fn=lambda params: objective_function(params, x_train, y_train), space=space, algo=tpe.suggest, max_evals=i+1)
-        mse_history.append(result['loss'])
+    trials = Trials()
+    best = fmin(fn=lambda params: objective_function(params, x_train, y_train), space=space, algo=tpe.suggest, max_evals=500, trials=trials)
 
-    optimized_params = space_eval(space, result)
+    mse_history = [x['result']['loss'] for x in trials.trials]
+
+    optimized_params = space_eval(space, best)
 
     model = MLPRegressor(hidden_layer_sizes=(100,), activation='relu', solver='adam', alpha=optimized_params['alpha'], learning_rate_init=optimized_params['learning_rate_init'], early_stopping=True, random_state=42)
     model.fit(x_train, y_train)
