@@ -62,6 +62,12 @@ def check_consistency(matrix):
     return True, weights
 
 # 模型训练相关函数
+def objective_function(params, x_train, y_train):
+    model = MLPRegressor(hidden_layer_sizes=(100,), activation='relu', solver='adam', alpha=params['alpha'], learning_rate_init=params['learning_rate_init'], early_stopping=True, random_state=42)
+    model.fit(x_train, y_train)
+    y_pred = model.predict(x_train)
+    return mean_squared_error(y_train, y_pred)
+
 def train_model(x_train, y_train, x_test, y_test):
     space = {
         'alpha': hp.loguniform('alpha', np.log(0.0001), np.log(1)),
