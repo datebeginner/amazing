@@ -122,7 +122,8 @@ def main():
             if user_input:
                 try:
                     user_input = validate_user_input(user_input)
-                    user_input = user_input * weights_df.T.values
+                    # 保留下一行以备后用，但暂时不执行
+                    # user_input = user_input * weights_df.T.values
                     prediction = model.predict([user_input])
                     st.write(f"预测结果：{prediction}")
                 except ValueError:
