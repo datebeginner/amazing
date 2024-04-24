@@ -112,14 +112,14 @@ def main():
             x_train = x_train * weights_df.T.values
             x_test = x_test * weights_df.T.values
 
-            fig1, fig2, model, mse = train_model(x_train, y_train, x_test, y_test)
+            fig1, fig2, model, mse, r2, mae = train_model(x_train, y_train, x_test, y_test)
 
             st.subheader("模型训练结果")
             st.plotly_chart(fig1)
             st.plotly_chart(fig2)
 
             st.write(f"均方误差（MSE）: {mse}")
-            st.write(f"R-squared: {r2}")        
+            st.write(f"R-squared: {r2}")
             st.write(f"Mean Absolute Error: {mae}")
 
             st.header("使用模型进行预测")
