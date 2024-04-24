@@ -119,8 +119,8 @@ def main():
             st.plotly_chart(fig2)
 
             st.write(f"均方误差（MSE）: {mse}")
-            st.write(f"R-squared: {r2}")
-st.write(f"Mean Absolute Error: {mae}")
+            st.write(f"R-squared: {r2}")        
+            st.write(f"Mean Absolute Error: {mae}")
 
             st.header("使用模型进行预测")
             user_input = st.text_input("输入预测数据（以逗号分隔的数值）")
