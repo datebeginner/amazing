@@ -90,7 +90,7 @@ def train_model(x_train, y_train, x_test, y_test):
     fig2.update_layout(title_text="训练和测试数据分布", barmode='overlay')
 
     return fig1, fig2, model, mse, r2, mae
-     r2 = r2_score(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
     mae = mean_absolute_error(y_test, y_pred)
 
     # 创建一个新的图像
