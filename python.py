@@ -29,10 +29,13 @@ def validate_user_input(user_input):
     try:
         numbers = []
         for num_str in user_input.split(','):
-            numerator, denominator = map(int, num_str.split('/'))
-            numbers.append(numerator / denominator)
+            if '/' in num_str:
+                numerator, denominator = map(int, num_str.split('/'))
+                numbers.append(numerator / denominator)
+            else:
+                numbers.append(int(num_str))
         if len(numbers) != 9:
-            raise ValueError("每行应输入9个分数，以逗号分隔")
+            raise ValueError("每行应输入9个数值（整数或分数），以逗号分隔")
         return numbers
     except ValueError as e:
         st.error(f"输入格式错误: {e}")
