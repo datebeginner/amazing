@@ -145,10 +145,14 @@ def main():
         if all(w is not None for w in [criteria_weights] + weights_within_criteria):
             # 将权重应用到DataFrame的相关列上
             for criterion, weight in zip(['B1', 'B2', 'B3'], weights_within_criteria):
+                # 假设 weight 是一个数组，我们需要将其转换为Series
+                # 并且确保它的索引与data中的列对应
+                weight_series = pd.Series(weight, index=[f"{criterion}C1", f"{criterion}C2", f"{criterion}C3"])
                 for col in data.filter(regex=f'^{criterion}.*$').columns:
                     # 确保只对数值列进行操作
                     if col in ['B1C1', 'B1C2', 'B2C1', 'B2C2', 'B3C1', 'B3C2', 'B3C3']:
-                        data[col] = (data[col] * weight).fillna(0)
+                        # 使用weight_series中的对应权重
+                        data[col] = (data[col] * weight_series[col]).fillna(0)
 
             x_train, x_test, y_train, y_test = preprocess_data(data)
 
@@ -156,13 +160,6 @@ def main():
 
             st.header("使用模型进行预测")
             user_input = st.text_input("输入预测数据（以逗号分隔的数值）")
-            if user_input:
-                try:
-                    user_input = validate_user_input(user_input)
-                    prediction = model.predict([user_input])
-                    st.write(f"预测结果：{prediction[0]}")
-                except ValueError:
-                    st.write("输入数据格式不正确，请输入逗号分隔的数值。")
             if user_input:
                 try:
                     user_input = validate_user_input(user_input)
