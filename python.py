@@ -110,8 +110,9 @@ def main():
         data = pd.read_csv(uploaded_file)
 
         st.header("输入层次分析矩阵")
-        user_matrix, weights = get_user_matrix()
-        if weights is not None:
+        user_matrix = get_user_matrix()  # 仅获取用户矩阵
+        if user_matrix is not None:
+            weights = calculate_weights(user_matrix)  # 单独计算权重
             weights_df = pd.DataFrame(weights, index=data.columns[:9], columns=['weight'])
             x_train, x_test, y_train, y_test = preprocess_data(data)
             x_train = x_train * weights_df.T.values
@@ -130,8 +131,6 @@ def main():
             if user_input:
                 try:
                     user_input = validate_user_input(user_input)
-                    # 保留下一行以备后用，但暂时不执行
-                    # user_input = user_input * weights_df.T.values
                     prediction = model.predict([user_input])
                     st.write(f"预测结果：{prediction}")
                 except ValueError:
