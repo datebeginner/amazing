@@ -8,7 +8,6 @@ from sklearn.metrics import mean_squared_error
 from sklearn.neural_network import MLPRegressor
 
 # 层次分析法（AHP）相关函数
-
 def validate_user_input(user_input):
     try:
         numbers = list(map(float, user_input.split(',')))
@@ -20,63 +19,60 @@ def validate_user_input(user_input):
         raise
 
 def check_consistency(matrix):
-    # 验证matrix是否为列表且非空，然后转换为NumPy数组
     if isinstance(matrix, list) and matrix:  # 确保是列表且非空
         matrix = np.array(matrix)
     else:
         raise ValueError("输入数据应为非空列表")
 
-    # 再次验证转换后是否全为数值类型
     if not np.issubdtype(matrix.dtype, np.number):
         raise ValueError("矩阵中所有元素必须是数值类型")
-
-    # 现在安全地执行原操作
+  
     weights = np.mean(matrix / matrix.sum(axis=0), axis=1)
     cr = np.max(np.abs(np.dot(matrix, weights) - np.einsum('ij,j->i', matrix, weights))) / (len(matrix) - 1)
-    
+   
     if cr > 0.1:
         return False, None
     return True, weights
 
 def get_user_matrices():
-    # 初始化计数器以生成唯一键
     criteria_row_counter = 0
     within_criteria_counters = {criterion: 0 for criterion in ['B1', 'B2', 'B3']}
 
-    # 收集准则层间的比较矩阵
     criteria_matrices = []
     for _ in range(3):
         unique_key = f"criterion_row_{criteria_row_counter}"
         row = st.text_input(f"请输入准则层间比较矩阵的一行数字，用逗号分隔:", key=unique_key)
         if row:
-            criteria_matrices.append(row)
+            validated_row = validate_user_input(row)
+            criteria_matrices.append(validated_row)
         criteria_row_counter += 1
 
-    # 收集同一准则层下自变量的比较矩阵
+    consistent, criteria_weights = check_consistency(criteria_matrices)
+    if not consistent:
+        st.warning('准则层比较矩阵的一致性检验未通过。请检查您的输入。')
+        return None, None, None, None
+
     within_criteria_matrices = {criterion: [] for criterion in ['B1', 'B2', 'B3']}
     for criterion in ['B1', 'B2', 'B3']:
         for _ in range(3):
             unique_key = f"{criterion}_row_{within_criteria_counters[criterion]}"
             row = st.text_input(f"请输入{criterion}下自变量比较矩阵的一行数字，用逗号分隔:", key=unique_key)
             if row:
-                within_criteria_matrices[criterion].append(row)
+                validated_row = validate_user_input(row)
+                within_criteria_matrices[criterion].append(validated_row)
             within_criteria_counters[criterion] += 1
 
-    # 其余逻辑保持不变...
-    # ...
-
     weights_within_criteria = []
-    for matrix in within_criteria_matrices:
+    for criterion, matrix in within_criteria_matrices.items():
         consistent, weights = check_consistency(matrix)
         if not consistent:
-            st.warning(f"{criterion}下自变量比较矩阵的一致性比率大于0.1，请重新输入。")
-            return None, None
+            st.warning(f"{criterion}下自变量比较矩阵的一致性检验未通过。请检查您的输入。")
+            return None, None, None, None
         weights_within_criteria.append(weights)
 
-    return criteria_matrix, within_criteria_matrices, weights_criteria, weights_within_criteria
+    return criteria_matrices, within_criteria_matrices, criteria_weights, weights_within_criteria
 
 # 数据预处理函数
-
 def preprocess_data(data):
     features = data[['B1C1', 'B1C2', 'B2C1', 'B2C2', 'B3C1', 'B3C2', 'B3C3']].copy()
     labels = data['物流行业经济适应度'].copy()
@@ -91,11 +87,10 @@ def preprocess_data(data):
     return train_test_split(features, labels, test_size=0.2, random_state=42)
 
 # 模型训练相关函数
-
 def objective_function(params, x_train, y_train):
-    model = MLPRegressor(hidden_layer_sizes=(100,), 
-                         activation='relu', 
-                         solver='adam', 
+    model = MLPRegressor(hidden_layer_sizes=(100,),
+                         activation='relu',
+                         solver='adam',
                          alpha=params['alpha'], 
                          learning_rate_init=params['learning_rate_init'], 
                          early_stopping=True, 
@@ -132,7 +127,6 @@ def train_model(x_train, y_train, x_test, y_test):
     y_pred = model.predict(x_test)
     mse = mean_squared_error(y_test, y_pred)
 
-    # 绘制模型评估结果
     fig1 = st.line_chart({'Actual': y_test.tolist(), 'Predicted': y_pred.tolist()})
     st.write(f"模型均方误差（MSE）: {mse}")
 
@@ -146,15 +140,13 @@ def main():
         data = pd.read_csv(uploaded_file)
 
         st.header("输入层次分析矩阵")
-        criteria_matrix, within_criteria_matrices, weights_criteria, weights_within_criteria = get_user_matrices()
-        if all(w is not None for w in [weights_criteria] + weights_within_criteria):
-            # 应用权重到特征
+        criteria_matrices, within_criteria_matrices, criteria_weights, weights_within_criteria = get_user_matrices()
+        if all(w is not None for w in [criteria_weights] + weights_within_criteria):
             for col, weight in zip(data.columns, weights_within_criteria[0]):
                 data[col] *= weight
 
             x_train, x_test, y_train, y_test = preprocess_data(data)
 
-            # 训练模型
             model = train_model(x_train, y_train, x_test, y_test)
 
             st.header("使用模型进行预测")
