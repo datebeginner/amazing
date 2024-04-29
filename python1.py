@@ -142,8 +142,10 @@ def main():
         st.header("输入层次分析矩阵")
         criteria_matrices, within_criteria_matrices, criteria_weights, weights_within_criteria = get_user_matrices()
         if all(w is not None for w in [criteria_weights] + weights_within_criteria):
-            for col, weight in zip(data.columns, weights_within_criteria[0]):
-                data[col] *= weight
+            for weight, criterion in zip(weights_within_criteria, ['B1', 'B2', 'B3']):
+                for col in data.filter(regex=criterion+'.*').columns:    # 根据准则过滤相关列
+                    data[col] = pd.to_numeric(data[col], errors='coerce')  # 转换为数字类型
+                    data[col] *= weight  # 应用权重
 
             x_train, x_test, y_train, y_test = preprocess_data(data)
 
