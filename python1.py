@@ -20,8 +20,20 @@ def validate_user_input(user_input):
         raise
 
 def check_consistency(matrix):
+    # 验证matrix是否为列表且非空，然后转换为NumPy数组
+    if isinstance(matrix, list) and matrix:  # 确保是列表且非空
+        matrix = np.array(matrix)
+    else:
+        raise ValueError("输入数据应为非空列表")
+
+    # 再次验证转换后是否全为数值类型
+    if not np.issubdtype(matrix.dtype, np.number):
+        raise ValueError("矩阵中所有元素必须是数值类型")
+
+    # 现在安全地执行原操作
     weights = np.mean(matrix / matrix.sum(axis=0), axis=1)
     cr = np.max(np.abs(np.dot(matrix, weights) - np.einsum('ij,j->i', matrix, weights))) / (len(matrix) - 1)
+    
     if cr > 0.1:
         return False, None
     return True, weights
