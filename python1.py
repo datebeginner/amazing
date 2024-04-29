@@ -36,8 +36,7 @@ def get_user_matrices():
                 st.error(f"输入格式错误: {e}")
                 return None
     
-    # 同一准则层下自变量的比较矩阵
-    within_criteria_matrices = []
+within_criteria_matrices = []
     for criterion in ['B1', 'B2', 'B3']:
         matrix = []
         for i in range(3):
@@ -59,6 +58,7 @@ def get_user_matrices():
     else:
         st.warning("一致性比率大于0.1，请重新输入比较矩阵。")
         return None, None
+
         
 def check_consistency(matrix):
     weights = np.mean(matrix / matrix.sum(axis=0), axis=1)
