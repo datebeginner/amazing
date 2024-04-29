@@ -27,10 +27,9 @@ def check_consistency(matrix):
     return True, weights
 
 def get_user_matrices():
-    # 收集和验证准则层间的比较矩阵
     criteria_matrices = []
-    for _ in range(3):  # 假设有3个准则层
-        row = st.text_input(f"请输入准则层间比较矩阵的一行数字，用逗号分隔:")
+    for i in range(3):  # 假设有3个准则层
+        row = st.text_input(f"请输入准则层间比较矩阵第{i+1}行的数字，用逗号分隔:")
         if row:
             try:
                 criteria_matrices.append(validate_user_input(row))
