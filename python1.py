@@ -27,43 +27,50 @@ def check_consistency(matrix):
     return True, weights
 
 def get_user_matrices():
-    criteria_matrices = []
-    for i in range(3):  # 假设有3个准则层
-        row = st.text_input(f"请输入准则层间比较矩阵第{i+1}行的数字，用逗号分隔:")
-        if row:
-            try:
-                criteria_matrices.append(validate_user_input(row))
-            except ValueError as e:
-                return None, None
+    # 初始化存储矩阵的列表
+    criteria_rows = []
+    within_criteria_matrices = {criterion: [] for criterion in ['B1', 'B2', 'B3']}  # 假设有3个准则层
 
-    criteria_matrix = np.array(criteria_matrices)
+    # 收集准则层间的比较矩阵
+    for _ in range(3):
+        row = st.text_input(f"请输入准则层间比较矩阵的一行数字，用逗号分隔:")
+        if row:
+            criteria_rows.append(row)
+
+    # 收集同一准则层下自变量的比较矩阵
+    for criterion in ['B1', 'B2', 'B3']:
+        for _ in range(3):  # 假设每个准则层下有3个自变量
+            row = st.text_input(f"请输入{criterion}下自变量比较矩阵的一行数字，用逗号分隔:")
+            if row:
+                within_criteria_matrices[criterion].append(row)
+
+    # 验证并转换输入为数字矩阵
+    try:
+        criteria_matrix = np.array([validate_user_input(row) for row in criteria_rows])
+        
+        within_criteria_np_matrices = {}
+        for criterion, rows in within_criteria_matrices.items():
+            within_criteria_np_matrices[criterion] = np.array([validate_user_input(row) for row in rows])
+
+    except ValueError as e:
+        st.error(f"输入格式错误: {e}")
+        return None, None
+
+    # 一致性检查
     consistent_criteria, weights_criteria = check_consistency(criteria_matrix)
     if not consistent_criteria:
         st.warning("准则层间比较矩阵的一致性比率大于0.1，请重新输入。")
         return None, None
 
-    # 收集和验证同一准则层下自变量的比较矩阵
-    within_criteria_matrices = []
-    for criterion in ['B1', 'B2', 'B3']:  # 假设有3个准则层
-        matrix = []
-        for _ in range(3):  # 假设每个准则层下有3个自变量
-            row = st.text_input(f"请输入{criterion}下自变量比较矩阵的一行数字，用逗号分隔:")
-            if row:
-                try:
-                    matrix.append(validate_user_input(row))
-                except ValueError as e:
-                    return None, None
-        within_criteria_matrices.append(np.array(matrix))
-
     weights_within_criteria = []
-    for matrix in within_criteria_matrices:
+    for criterion, matrix in within_criteria_np_matrices.items():
         consistent, weights = check_consistency(matrix)
         if not consistent:
             st.warning(f"{criterion}下自变量比较矩阵的一致性比率大于0.1，请重新输入。")
             return None, None
         weights_within_criteria.append(weights)
 
-    return criteria_matrix, within_criteria_matrices, weights_criteria, weights_within_criteria
+    return criteria_matrix, within_criteria_np_matrices, weights_criteria, weights_within_criteria
 
 # 数据预处理函数
 
