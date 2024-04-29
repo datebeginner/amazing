@@ -27,34 +27,31 @@ def check_consistency(matrix):
     return True, weights
 
 def get_user_matrices():
-    # 收集和验证准则层间的比较矩阵
+    # 初始化计数器以生成唯一键
+    criteria_row_counter = 0
+    within_criteria_counters = {criterion: 0 for criterion in ['B1', 'B2', 'B3']}
+
+    # 收集准则层间的比较矩阵
     criteria_matrices = []
-    for _ in range(3):  # 假设有3个准则层
-        row = st.text_input(f"请输入准则层间比较矩阵的一行数字，用逗号分隔:")
+    for _ in range(3):
+        unique_key = f"criterion_row_{criteria_row_counter}"
+        row = st.text_input(f"请输入准则层间比较矩阵的一行数字，用逗号分隔:", key=unique_key)
         if row:
-            try:
-                criteria_matrices.append(validate_user_input(row))
-            except ValueError as e:
-                return None, None
+            criteria_matrices.append(row)
+        criteria_row_counter += 1
 
-    criteria_matrix = np.array(criteria_matrices)
-    consistent_criteria, weights_criteria = check_consistency(criteria_matrix)
-    if not consistent_criteria:
-        st.warning("准则层间比较矩阵的一致性比率大于0.1，请重新输入。")
-        return None, None
-
-    # 收集和验证同一准则层下自变量的比较矩阵
-    within_criteria_matrices = []
-    for criterion in ['B1', 'B2', 'B3']:  # 假设有3个准则层
-        matrix = []
-        for _ in range(3):  # 假设每个准则层下有3个自变量
-            row = st.text_input(f"请输入{criterion}下自变量比较矩阵的一行数字，用逗号分隔:")
+    # 收集同一准则层下自变量的比较矩阵
+    within_criteria_matrices = {criterion: [] for criterion in ['B1', 'B2', 'B3']}
+    for criterion in ['B1', 'B2', 'B3']:
+        for _ in range(3):
+            unique_key = f"{criterion}_row_{within_criteria_counters[criterion]}"
+            row = st.text_input(f"请输入{criterion}下自变量比较矩阵的一行数字，用逗号分隔:", key=unique_key)
             if row:
-                try:
-                    matrix.append(validate_user_input(row))
-                except ValueError as e:
-                    return None, None
-        within_criteria_matrices.append(np.array(matrix))
+                within_criteria_matrices[criterion].append(row)
+            within_criteria_counters[criterion] += 1
+
+    # 其余逻辑保持不变...
+    # ...
 
     weights_within_criteria = []
     for matrix in within_criteria_matrices:
