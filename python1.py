@@ -116,7 +116,7 @@ def main():
         data = pd.read_csv(uploaded_file)
 
         st.header("输入层次分析矩阵")
-        user_matrix, weights = get_user_matrix()
+        user_matrices, weights = get_user_matrices()
         if weights is not None:
             weights_df = pd.DataFrame(weights, index=data.columns[:-1], columns=['weight'])
             x_train, x_test, y_train, y_test = preprocess_data(data)
