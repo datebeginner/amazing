@@ -132,6 +132,7 @@ def train_model(x_train, y_train, x_test, y_test):
 
     return model
 
+...
 def main():
     st.title("数据分析与模型训练")
 
@@ -145,7 +146,7 @@ def main():
             for weight, criterion in zip(weights_within_criteria, ['B1', 'B2', 'B3']):
                 for col in data.filter(regex=criterion+'.*').columns:    # 根据准则过滤相关列
                     data[col] = pd.to_numeric(data[col], errors='coerce')  # 转换为数字类型
-                    data[col] *= weight  # 应用权重
+                    data[col] = (data[col] * weight).fillna(0)  # 乘以权重并填补NaN值
 
             x_train, x_test, y_train, y_test = preprocess_data(data)
 
