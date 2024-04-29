@@ -11,9 +11,8 @@ import plotly.express as px
 import plotly.graph_objs as go
 from hyperopt import fmin, tpe, hp, STATUS_OK, Trials
 
-# 数据预处理函数
 def preprocess_data(data):
-    features = data[['B1C1', 'B1C2', 'B2C1', 'B2C2', 'B2C3', 'B3C1', 'B3C2']].copy()
+    features = data[['B1C1', 'B1C2', 'B2C1', 'B2C2', 'B3C1', 'B3C2', 'B3C3']].copy()
     labels = data['物流行业经济适应度'].copy()
 
     features.dropna(inplace=True)
@@ -24,36 +23,43 @@ def preprocess_data(data):
 
     return train_test_split(features, labels, test_size=0.2, random_state=42)
 
-
-# 层次分析法（AHP）相关函数
-def validate_user_input(user_input):
-    try:
-        numbers = list(map(float, user_input.split(',')))
-        if len(numbers) != 7:
-            raise ValueError("每行应输入7个数字，用逗号分隔")
-        return numbers
-    except ValueError as e:
-        st.error(f"输入格式错误: {e}")
-        raise
-
-def get_user_matrix():
-    user_matrix = []
-    for i in range(7):
-        row = st.text_input(f"请输入第{i+1}行的7个数字，用逗号分隔:")
-        if row:  # 只有当用户输入了数据后才添加到列表中
-            user_matrix.append(validate_user_input(row))
-
-    if len(user_matrix) == 7:  # 只有当用户输入了所有7行数据后才进行处理
-        user_matrix = np.array(user_matrix)
-        consistent, weights = check_consistency(user_matrix)
-        if consistent:
-            return user_matrix, weights
-        else:
-            st.warning("一致性比率大于0.1，请重新输入比较矩阵。")
-            return None, None
+# 修改get_user_matrix函数以适应四个不同的比较矩阵
+def get_user_matrices():
+    # 准则层之间的比较矩阵
+    criteria_matrix = []
+    for i in range(3):
+        row = st.text_input(f"请输入准则层间比较矩阵第{i+1}行的3个数字，用逗号分隔:")
+        if row:
+            try:
+                criteria_matrix.append(validate_user_input(row))
+            except ValueError as e:
+                st.error(f"输入格式错误: {e}")
+                return None
+    
+    # 同一准则层下自变量的比较矩阵
+    within_criteria_matrices = []
+    for criterion in ['B1', 'B2', 'B3']:
+        matrix = []
+        for i in range(3):
+            row = st.text_input(f"请输入{criterion}下自变量比较矩阵第{i+1}行的3个数字，用逗号分隔:")
+            if row:
+                try:
+                    matrix.append(validate_user_input(row))
+                except ValueError as e:
+                    st.error(f"输入格式错误: {e}")
+                    return None
+        within_criteria_matrices.append(np.array(matrix))
+    
+    # 一致性检验
+    consistent_criteria, weights_criteria = check_consistency(np.array(criteria_matrix))
+    consistent_within = all(check_consistency(matrix)[0] for matrix in within_criteria_matrices)
+    
+    if consistent_criteria and consistent_within:
+        return user_matrix, weights
     else:
-        return None, None  # 如果用户还没有输入完所有的数据，就返回None, None
-
+        st.warning("一致性比率大于0.1，请重新输入比较矩阵。")
+        return None, None
+        
 def check_consistency(matrix):
     weights = np.mean(matrix / matrix.sum(axis=0), axis=1)
     cr = np.max(np.abs(np.dot(matrix, weights) - np.sum(weights))) / (len(matrix) - 1)
